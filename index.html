@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0b0a16">
-<title>ARUVERSE V3 — Anime & Donghua Premium</title>
+<title>ARUVERSE V5 — Anime, Donghua & Movie</title>
 <style>
 :root{--bg:#090915;--surface:#131326;--panel:#18172c;--border:#2e2b43;--txt:#f7f5ff;--muted:#aaa6c0;--accent:#ab70ff;--a2:#fe75b3;--bright:#d7baff;--radius:17px;--shadow:0 16px 35px rgba(0,0,0,.2)}
 *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:radial-gradient(ellipse 85% 50% at 75% -15%,#28133c 0,transparent 80%),var(--bg);color:var(--txt);font:14px/1.5 system-ui,-apple-system,Segoe UI,Arial,sans-serif;min-height:100vh}button,input,select{font:inherit}button{cursor:pointer}a{color:inherit;text-decoration:none}button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--a2);outline-offset:2px}img{max-width:100%}
@@ -17,7 +17,11 @@
 
 .v3bar{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin:12px 0 18px}.v3bar .btn{font-size:12px;padding:10px 12px}.v3box{border:1px solid #62457c;background:linear-gradient(120deg,#251836,#19172d);border-radius:15px;padding:15px;margin:15px 0}.v3box strong{display:block;margin-bottom:6px}.v3box p{font-size:12px;color:#bfb2d0;margin:5px 0}.v3progress{height:6px;background:#43324d;border-radius:9px;overflow:hidden;margin-top:8px}.v3progress>i{display:block;height:100%;background:linear-gradient(90deg,#ab70ff,#fe75b3)}.v3continue{border:1px solid #6c4c83;background:#291b3f;border-radius:13px;padding:13px;margin:15px 0;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}.v3continue button{background:#9d61df;border:0;border-radius:9px;color:white;padding:9px 14px;font-weight:800}.v3tag{display:inline-block;border:1px solid #70428f;background:#322044;color:#e9d4ff;border-radius:100px;padding:4px 10px;font-size:11px}
 </style>
-</head>
+<style>
+#v5account{position:fixed;right:18px;bottom:20px;z-index:75;background:linear-gradient(120deg,#a56bfa,#ed72b8);color:#160a24;border:0;border-radius:40px;padding:13px 20px;font-weight:800;box-shadow:0 8px 40px #0008;cursor:pointer}
+#v5panel{position:fixed;inset:0;z-index:100;background:#05040be8;display:none;align-items:center;justify-content:center;padding:18px;overflow:auto}
+#v5panel.open{display:flex}#v5box{width:min(460px,100%);background:#1a1730;border:1px solid #51416d;border-radius:24px;padding:24px;color:#fff;box-shadow:0 20px 80px #0009}#v5box h2{margin:0 0 8px}#v5box p{color:#c6bbd7;font-size:14px;line-height:1.6}#v5box input{display:block;width:100%;box-sizing:border-box;margin:9px 0;padding:13px;background:#0c0a1b;color:#fff;border:1px solid #5a5070;border-radius:10px}#v5box button{padding:11px 15px;border-radius:10px;background:#b681fa;border:0;color:#150b21;font-weight:800;cursor:pointer;margin:5px 5px 5px 0}#v5box button.secondary{background:#302943;color:#eee}#v5msg{font-size:13px;min-height:18px;color:#e6ca80;white-space:pre-wrap}#v5box code{overflow-wrap:anywhere}
+</style></head>
 <body>
 <div id="app">
 <aside class="sidebar" id="sidebar">
@@ -78,7 +82,7 @@ const year=x=>x.startDate?.year||x.seasonYear||x.year||'—';
 const kind=x=>x.format==='MOVIE'?'movie':x.countryOfOrigin==='CN'?'donghua':'anime';
 const kindLabel=x=>x.format==='MOVIE'?'MOVIE':x.countryOfOrigin==='CN'?'DONGHUA':'ANIME';
 const isFav=id=>favorites.includes(String(id));
-const remember=()=>{try{localStorage.setItem('aruverse_favorites',JSON.stringify(favorites));localStorage.setItem('aruverse_episodeURLs',JSON.stringify(episodeURLs));localStorage.setItem('aruverse_brand',JSON.stringify(brand));localStorage.setItem('aruverse_mediaIndex',JSON.stringify(mediaIndex));}catch{}};
+const remember=()=>{try{localStorage.setItem('aruverse_favorites',JSON.stringify(favorites));localStorage.setItem('aruverse_episodeURLs',JSON.stringify(episodeURLs));localStorage.setItem('aruverse_brand',JSON.stringify(brand));localStorage.setItem('aruverse_mediaIndex',JSON.stringify(mediaIndex));window.aruCloudSave?.();}catch{}};
 const track=list=>{for(const m of list){mediaIndex[m.id]=m}const keys=Object.keys(mediaIndex);if(keys.length>180){for(const k of keys.slice(0,keys.length-180)){if(!favorites.includes(k)&&!episodeURLs[k])delete mediaIndex[k]}}remember()};
 const iconColor=id=>{let n=Number(id)||23;return ['#623393','#884264','#364a8b','#6b4f9b','#347f81','#9a4d52'][n%6]};
 const iconColor2=id=>['#201646','#2c1947','#1e193e','#3d2044'][Number(id)%4];
@@ -132,11 +136,11 @@ $('#modalFav').addEventListener('click',()=>toggleFav(m.id));['#playTrailer','#t
 $('#videoFiles').addEventListener('change',e=>{const files=[...e.target.files];if(!files.length)return;const id=String(m.id),start=entries.length+1;localFiles[id]||=[];files.forEach((file,i)=>localFiles[id].push({n:start+i,title:file.name,url:URL.createObjectURL(file)}));track([m]);renderModal(m);toast(files.length+' video siap diputar')});
 $('#episodesArea')?.addEventListener('click',e=>{const b=e.target.closest('[data-play-episode]');if(!b)return;const entry=episodeEntries(m)[Number(b.dataset.playEpisode)];if(!entry)return;state.activeVideo={type:'video',url:entry.url};renderModal(m);$('#videoElement')?.scrollIntoView({block:'center',behavior:'smooth'})});}
 
-// ARUVERSE V3: history, subtitle tracks, episode navigation (local to this browser).
+// ARUVERSE V4: history, subtitle tracks, episode navigation (local to this browser).
 const v3Key='aruverse_v3_history';
 let v3History={};try{v3History=JSON.parse(localStorage.getItem(v3Key)||'{}')||{}}catch{}
 const v3Subs={};
-function v3Save(){try{localStorage.setItem(v3Key,JSON.stringify(v3History))}catch{}}
+function v3Save(){try{localStorage.setItem(v3Key,JSON.stringify(v3History));window.aruCloudSave?.()}catch{}}
 function v3Ep(m){const a=state.activeVideo;if(!a||a.type!=='video')return null;return episodeEntries(m).find(x=>x.url===a.url)||null}
 function v3PlayIndex(m,i){const e=episodeEntries(m)[i];if(!e)return;state.activeVideo={type:'video',url:e.url};renderModal(m);$('#videoElement')?.scrollIntoView({block:'center',behavior:'smooth'})}
 const v3OriginalRender=renderModal;
@@ -157,5 +161,51 @@ renderModal=function(m){
 
 $('#footerYear').textContent=new Date().getFullYear();initBrand();track(fallback);renderView();loadData();
 </script>
-</body>
+<style>
+.v4featured{margin-top:28px;background:linear-gradient(120deg,#211335,#15152c);border:1px solid #5a387b;border-radius:20px;padding:21px}.v4featured h2{margin:0 0 7px}.v4featured p{color:#bdb0d3;font-size:12px}.v4tags{display:flex;flex-wrap:wrap;gap:8px;margin:15px 0}.v4tag{background:#302044;border:1px solid #63428c;color:#f1d9ff;border-radius:999px;padding:8px 11px;font-size:12px;font-weight:700}.v4tag:hover{background:#633c88}.v4providers{display:flex;flex-wrap:wrap;gap:9px;margin-top:14px}.v4providers a{border:1px solid #59486b;background:#2a213b;padding:10px 12px;border-radius:10px;font-weight:700;font-size:12px}.v4providers a:hover{border-color:#e5a7ff}.v4small{font-size:11px;color:#ad9fbf;margin-top:10px}
+</style>
+<script>
+/* V4 enhancement: discovery-only links; no unauthorized scraping or bypassing paywalls/DRM. */
+(function(){
+ const trendingCN=['Battle Through the Heavens','Soul Land','Perfect World','Swallowed Star','Renegade Immortal','A Record of a Mortal’s Journey to Immortality','Throne of Seal','Martial Universe','The Demon Hunter','Jade Dynasty','The Great Ruler','Against the Gods','Shrouding the Heavens','The Island of Siliang','Link Click','The King’s Avatar','Heaven Official’s Blessing','Fog Hill of Five Elements'];
+ const trendingJP=['One Piece','Naruto','Bleach','Jujutsu Kaisen','Demon Slayer','Attack on Titan','Solo Leveling','Frieren','Chainsaw Man','My Hero Academia','Blue Lock','Dan Da Dan','Death Note','Hunter x Hunter'];
+ function providerSearch(name,domain){return 'https://www.google.com/search?q='+encodeURIComponent('site:'+domain+' '+name+' anime donghua watch official');}
+ function v4Block(){return `<section class="v4featured" id="v4discover"><span class="kicker">✦ ARUVERSE V5 • DISCOVERY HUB</span><h2>🐉 Donghua ramai & anime favorit</h2><p>Ketuk judul untuk mencari katalog AniList. Daftar pilihan ini adalah kurasi awal, bukan jaminan semua tayangan tersedia.</p><h3>Donghua populer</h3><div class="v4tags">${trendingCN.map(t=>`<button class="v4tag" data-v4search="${t.replace(/"/g,'&quot;')}">${t}</button>`).join('')}</div><h3>Anime populer</h3><div class="v4tags">${trendingJP.map(t=>`<button class="v4tag" data-v4search="${t.replace(/"/g,'&quot;')}">${t}</button>`).join('')}</div><p class="v4small">Cari tayangan di penyedia resmi: ketersediaan episode, subtitle, dan negara dapat berbeda.</p><div class="v4providers"><a target="_blank" rel="noopener noreferrer" href="https://www.crunchyroll.com/">Crunchyroll ↗</a><a target="_blank" rel="noopener noreferrer" href="https://www.bilibili.tv/">Bstation / Bilibili ↗</a><a target="_blank" rel="noopener noreferrer" href="https://wetv.vip/">WeTV ↗</a><a target="_blank" rel="noopener noreferrer" href="https://www.iq.com/">iQIYI ↗</a><a target="_blank" rel="noopener noreferrer" href="https://www.youtube.com/">YouTube resmi ↗</a></div></section>`}
+ function decorate(){let root=document.querySelector('.main');if(!root)return;let existing=document.querySelector('#v4discover');if(existing)existing.remove();let anchor=root.querySelector('.hero')||root.querySelector('.section');if(anchor)anchor.insertAdjacentHTML('afterend',v4Block());}
+ const orig=window.renderView;if(typeof orig==='function'){window.renderView=function(){let v=orig.apply(this,arguments);decorate();return v;}}
+ document.addEventListener('click',function(e){const b=e.target.closest('[data-v4search]');if(!b)return;const title=b.dataset.v4search;setView('search');const input=document.querySelector('#searchBox');if(input){input.value=title;input.dispatchEvent(new Event('input',{bubbles:true}));} });
+ const originalModal=window.renderModal;if(typeof originalModal==='function')window.renderModal=function(m){originalModal(m);let body=document.querySelector('#modalContent .detailBody');if(!body||body.querySelector('#v4providerBox'))return;let title=(m.title?.english||m.title?.romaji||'').trim();let providers=[['Crunchyroll','crunchyroll.com'],['Bstation','bilibili.tv'],['WeTV','wetv.vip'],['iQIYI','iq.com']];let el=document.createElement('div');el.id='v4providerBox';el.className='v4featured';el.innerHTML='<h3>🔎 Temukan sumber tayang</h3><p>Pencarian situs penyedia resmi. Hasil bukan jaminan judul tersedia dan tidak otomatis membuka video di ARUVERSE.</p><div class="v4providers">'+providers.map(([label,domain])=>'<a target="_blank" rel="noopener noreferrer" href="'+providerSearch(title,domain)+'">Cari di '+label+' ↗</a>').join('')+'</div>';body.appendChild(el);};
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(decorate,250));else setTimeout(decorate,250);
+})();
+</script>
+<button id="v5account" type="button">👤 Akun & Cloud</button>
+<div id="v5panel" role="dialog" aria-modal="true" aria-label="Akun ARUVERSE"><div id="v5box">
+<button id="v5close" class="secondary" style="float:right" aria-label="Tutup">✕</button><h2>✦ ARUVERSE V5</h2><p>Masuk untuk menyimpan favorit, playlist, dan riwayat menonton ke database pribadimu. Mode tanpa akun tetap bisa digunakan.</p>
+<div id="v5config"><h3>Hubungkan database Supabase</h3><p>Admin website: masukkan Project URL dan publishable/anon key dari proyek Supabase milikmu. Jangan pernah masukkan service_role atau secret key.</p><input id="v5url" placeholder="https://xxxxx.supabase.co" autocomplete="off"><input id="v5key" placeholder="Publishable key (sb_publishable_...) atau anon key" autocomplete="off"><button id="v5saveconfig">Simpan konfigurasi</button></div>
+<div id="v5auth" style="display:none"><p id="v5who">Belum masuk</p><div id="v5login"><input type="email" id="v5email" placeholder="Email" autocomplete="email"><input type="password" id="v5password" placeholder="Password (minimal 6 karakter)" autocomplete="current-password"><button id="v5signin">Masuk</button><button id="v5signup" class="secondary">Daftar akun</button></div><button id="v5sync" class="secondary" style="display:none">Sinkronkan sekarang</button><button id="v5logout" class="secondary" style="display:none">Keluar</button><button id="v5change" class="secondary">Ubah konfigurasi</button></div>
+<div id="v5msg" aria-live="polite"></div><p style="font-size:12px">Catatan: tautan penyedia resmi tidak otomatis menjadi video yang dapat diputar di website ini. Akun dan cloud memerlukan konfigurasi Supabase dan tabel database.</p>
+</div></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+(function(){
+'use strict';
+const el=id=>document.getElementById(id), panel=el('v5panel'), msg=s=>el('v5msg').textContent=s;
+let client=null, currentUser=null, timer=null, loading=false;
+function config(){try{return JSON.parse(localStorage.getItem('aruverse_cloud_config')||'null')}catch{return null}}
+function showAuth(){el('v5config').style.display='none';el('v5auth').style.display='block'}
+function showConfig(){el('v5config').style.display='block';el('v5auth').style.display='none'}
+async function init(){const c=config();if(!c){showConfig();return}el('v5url').value=c.url;el('v5key').value=c.key;if(!window.supabase){msg('Library Supabase tidak dapat dimuat. Pastikan internet aktif.');showConfig();return}try{client=window.supabase.createClient(c.url,c.key,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});showAuth();const {data,error}=await client.auth.getUser();if(error&&error.name!=='AuthSessionMissingError')msg(error.message);currentUser=data?.user||null;update();if(currentUser)await pull();client.auth.onAuthStateChange((_event,session)=>{const next=session?.user||null;if(next?.id!==currentUser?.id){currentUser=next;update();if(next)setTimeout(pull,0)}})}catch(e){msg(e.message);showConfig()}}
+function update(){el('v5who').textContent=currentUser?'Masuk sebagai '+currentUser.email:'Belum masuk';el('v5login').style.display=currentUser?'none':'block';el('v5logout').style.display=currentUser?'inline-block':'none';el('v5sync').style.display=currentUser?'inline-block':'none';el('v5account').textContent=currentUser?'☁️ '+currentUser.email.split('@')[0]:'👤 Akun & Cloud'}
+function snapshot(){return {favorites,episodeURLs,mediaIndex,v3History,brand,updated_at:new Date().toISOString()}}
+async function push(){if(!client||!currentUser||loading)return;const data=snapshot();const {error}=await client.from('user_state').upsert({user_id:currentUser.id,data,updated_at:data.updated_at},{onConflict:'user_id'});if(error)throw error}
+async function pull(){if(!client||!currentUser)return;loading=true;try{const {data,error}=await client.from('user_state').select('data').eq('user_id',currentUser.id).maybeSingle();if(error)throw error;if(data?.data){const d=data.data;favorites=Array.isArray(d.favorites)?d.favorites:favorites;episodeURLs=d.episodeURLs&&typeof d.episodeURLs==='object'?d.episodeURLs:episodeURLs;mediaIndex=d.mediaIndex&&typeof d.mediaIndex==='object'?d.mediaIndex:mediaIndex;v3History=d.v3History&&typeof d.v3History==='object'?d.v3History:v3History;brand=typeof d.brand==='string'?d.brand:brand;localStorage.setItem('aruverse_favorites',JSON.stringify(favorites));localStorage.setItem('aruverse_episodeURLs',JSON.stringify(episodeURLs));localStorage.setItem('aruverse_mediaIndex',JSON.stringify(mediaIndex));localStorage.setItem('aruverse_v3_history',JSON.stringify(v3History));localStorage.setItem('aruverse_brand',JSON.stringify(brand));initBrand();el('favCounter').textContent=favorites.length;renderView();msg('Data akun berhasil dimuat dari cloud.')}else{await push();msg('Akun baru: data browser berhasil dikirim ke cloud.')}}catch(e){msg('Sinkronisasi gagal: '+e.message+' — periksa tabel dan kebijakan RLS.')}finally{loading=false}}
+window.aruCloudSave=()=>{if(!currentUser||loading)return;clearTimeout(timer);timer=setTimeout(()=>push().catch(e=>msg('Gagal menyimpan: '+e.message)),1100)};
+el('v5account').onclick=()=>panel.classList.add('open');el('v5close').onclick=()=>panel.classList.remove('open');panel.addEventListener('click',e=>{if(e.target===panel)panel.classList.remove('open')});
+el('v5saveconfig').onclick=()=>{const url=el('v5url').value.trim().replace(/\/$/,'');const key=el('v5key').value.trim();if(!/^https:\/\/[a-z0-9-]+\.supabase\.co$/i.test(url)||!key){msg('Isi URL Supabase dan publishable/anon key yang benar.');return}localStorage.setItem('aruverse_cloud_config',JSON.stringify({url,key}));location.reload()};
+el('v5change').onclick=()=>{showConfig();msg('Mengubah konfigurasi akan menghubungkan website ke proyek database lain. Simpan lalu muat ulang.')};
+async function auth(mode){if(!client)return msg('Konfigurasi Supabase belum ada.');const email=el('v5email').value.trim(),password=el('v5password').value;if(!email||password.length<6)return msg('Isi email dan password minimal 6 karakter.');msg('Memproses...');const {data,error}=mode==='signup'?await client.auth.signUp({email,password}):await client.auth.signInWithPassword({email,password});if(error)return msg(error.message);if(mode==='signup'&&!data.session)return msg('Pendaftaran berhasil. Periksa email untuk konfirmasi, lalu masuk.');currentUser=data.user;update();await pull()}
+el('v5signin').onclick=()=>auth('signin');el('v5signup').onclick=()=>auth('signup');el('v5sync').onclick=async()=>{msg('Menyinkronkan...');try{await push();msg('Data perangkat ini berhasil disimpan ke cloud.')}catch(e){msg(e.message)}};
+el('v5logout').onclick=async()=>{if(!client)return;await client.auth.signOut();currentUser=null;update();msg('Berhasil keluar. Data lokal pada perangkat ini tetap ada.')};init();
+})();
+</script></body>
 </html>
